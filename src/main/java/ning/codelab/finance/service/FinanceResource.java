@@ -16,6 +16,7 @@
 package ning.codelab.finance.service;
 
 import java.util.Map;
+import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -46,10 +47,39 @@ public class FinanceResource
         this.persistance = persistance;
     }
 
+    private void validateOrganization(Organization org)
+    {
+        if (org.getId() <= 0) {
+            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity("Invalid Organization id.").build());
+        }
+        if (org.getName() == null || org.getName().isEmpty() || org.getName().trim().isEmpty()) {
+            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity("Invalid Organization name.").build());
+        }
+    }
+
+    private void validateEmployee(Employee employee)
+    {
+        if (employee.getId() <= 0) {
+            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity("Invalid Employee id.").build());
+        }
+        if (employee.getFirstName() == null || employee.getFirstName().isEmpty() || employee.getFirstName().trim().isEmpty()) {
+            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity("Invalid Employee first Name.").build());
+        }
+
+        if (employee.getLastName() == null || employee.getLastName().isEmpty() || employee.getLastName().trim().isEmpty()) {
+            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity("Invalid Employee last Name.").build());
+        }
+
+        if (employee.getEmailId() == null || employee.getEmailId().isEmpty() || employee.getEmailId().trim().isEmpty()) {
+            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity("Invalid Employee email address.").build());
+        }
+    }
+
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addOrganization(Organization org)
     {
+        validateOrganization(org);
         if (persistance.getOrganization(org.getId()) != null) {
             throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity("Organization already exists").build());
         }
@@ -57,10 +87,7 @@ public class FinanceResource
         return Response.status(Status.CREATED).build();
     }
 
-    @GET
-    @Path("/{orgid}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Organization getOrganization(@PathParam("orgid") int orgId)
+    private Organization getOrganization(int orgId)
     {
         Organization org = persistance.getOrganization(orgId);
         if (org == null) {
@@ -75,6 +102,8 @@ public class FinanceResource
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addEmployee(@PathParam("orgid") int orgId, Employee employee)
     {
+        validateEmployee(employee);
+
         if (persistance.getOrganization(orgId) == null) {
             throw new WebApplicationException(Response.status(Status.NOT_FOUND).entity("Organization with given id not found.").build());
         }
@@ -84,8 +113,9 @@ public class FinanceResource
         if (organization.getEmployee(employee.getId()) != null) {
             throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity("Employee already exists.").build());
         }
-
+        
         organization.addEmployee(employee);
+        
         return Response.status(Status.CREATED).build();
     }
 
@@ -102,26 +132,38 @@ public class FinanceResource
 
         return employee;
     }
-    
+
+    @GET
+    @Path("/{orgid}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Set<Employee> getAllEmployees(@PathParam("orgid") int orgId)
+    {
+        Organization organization = getOrganization(orgId);
+        return organization.getAllEmployees();
+    }
+
+
     @POST
     @Path("/{orgid}/{empid}/{year}/{month}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response addPayslip(@PathParam("orgid") int orgId, @PathParam("empid") int empId, @PathParam("year") int year, @PathParam("month") int month, ImmutableMap<String, Integer> payslipDetails){
+    public Response addPayslip(@PathParam("orgid") int orgId, @PathParam("empid") int empId, @PathParam("year") int year, @PathParam("month") int month, ImmutableMap<String, Integer> payslipDetails)
+    {
         Employee employee = getEmployee(orgId, empId);
         employee.addPayslipForMonth(year, month, payslipDetails);
         return Response.ok("Payslip added successfully.").build();
     }
-    
+
     @GET
     @Path("/{orgid}/{empid}/{year}/{month}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Map<String, Integer> getPayslip(@PathParam("orgid") int orgId, @PathParam("empid") int empId, @PathParam("year") int year, @PathParam("month") int month){
+    public Map<String, Integer> getPayslip(@PathParam("orgid") int orgId, @PathParam("empid") int empId, @PathParam("year") int year, @PathParam("month") int month)
+    {
         Employee employee = getEmployee(orgId, empId);
         Map<String, Integer> payslipForMonth = employee.getPayslipForMonth(year, month);
-        if(payslipForMonth == null){
+        if (payslipForMonth == null) {
             throw new WebApplicationException(Response.status(Status.NOT_FOUND).build());
         }
         return payslipForMonth;
     }
-    
+
 }

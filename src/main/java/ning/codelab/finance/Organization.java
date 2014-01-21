@@ -20,6 +20,7 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 public class Organization
@@ -60,5 +61,10 @@ public class Organization
             return iterator.next();
         }
         return null;
+    }
+
+    public Set<Employee> getAllEmployees()
+    {
+        return ImmutableSet.copyOf(employeeList);
     }
 }
