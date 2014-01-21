@@ -55,5 +55,16 @@ public class EmployeeTest
         assertEquals(payslipForMonth.get("HRA"), Integer.valueOf(16000));
         assertEquals(payslipForMonth.get("Professional Tax"), Integer.valueOf(-200));
     }
+    
+    @Test
+    public void testEmployeeEquality(){
+        Employee emp1 = new Employee(1, "john", "smith", "john.smith@foo.bar");
+        Employee emp2 = new Employee(1, "first", "last", "first.last@foo.bar");
+        Employee emp3 = new Employee(2, "john", "smith", "john.smith@foo.bar");
 
+        assertEquals(emp1, emp2);
+        assertEquals(emp2, emp1);
+        assertNotEquals(emp2, emp3);
+        assertNotEquals(emp1, emp3);
+    }
 }

@@ -23,9 +23,11 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 
+import ning.codelab.finance.json.JacksonJsonProviderWrapper;
 import ning.codelab.finance.json.JsonObjectMapperProvider;
 import ning.codelab.finance.persist.FinancePersistance;
 import ning.codelab.finance.persist.InMemoryPersistanceImpl;
+import ning.codelab.finance.service.FinanceResource;
 
 public class FinanceServerModule extends JerseyServletModule 
 {
@@ -34,11 +36,10 @@ public class FinanceServerModule extends JerseyServletModule
 
     @Override
     protected void configureServlets() {
-//        bind(CustomerResource.class);
+        bind(FinanceResource.class);
         bind(FinancePersistance.class).to(InMemoryPersistanceImpl.class).asEagerSingleton();
         
-        bind(JacksonJsonProvider.class).toProvider(ning.codelab.finance.json.JacksonJsonProviderWrapper.class)
-        .asEagerSingleton();
+        bind(JacksonJsonProvider.class).toProvider(JacksonJsonProviderWrapper.class).asEagerSingleton();
 
     
     bind(ObjectMapper.class).toProvider(new JsonObjectMapperProvider());

@@ -53,4 +53,17 @@ public class OrganizationTest
         assertEquals(employee.getLastName(), "smith");
         assertEquals(employee.getEmailId(), "john.smith@foo.bar");
     }
+    
+    @Test
+    public void testEmployeeSet(){
+        Employee emp1 = new Employee(1, "john", "smith", "john.smith@foo.bar");
+        Employee emp2 = new Employee(1, "first", "last", "first.last@foo.bar");
+        Employee emp3 = new Employee(2, "john", "smith", "john.smith@foo.bar");
+
+        testOrg.addEmployee(emp1);
+        testOrg.addEmployee(emp2);
+        testOrg.addEmployee(emp3);
+        
+        assertEquals( testOrg.getAllEmployees().size(), 2);
+    }
 }
