@@ -104,7 +104,7 @@ public class FinanceResource
     }
     
     @POST
-    @Path("/{orgid}/{empid}/")
+    @Path("/{orgid}/{empid}/{year}/{month}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addPayslip(@PathParam("orgid") int orgId, @PathParam("empid") int empId, @PathParam("year") int year, @PathParam("month") int month, ImmutableMap<String, Integer> payslipDetails){
         Employee employee = getEmployee(orgId, empId);
