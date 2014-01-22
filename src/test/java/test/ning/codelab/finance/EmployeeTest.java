@@ -15,16 +15,20 @@
  */
 package test.ning.codelab.finance;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotEquals;
+import static org.testng.Assert.assertNotNull;
+
 import java.util.Map;
 
+import org.joda.time.YearMonth;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 
 import ning.codelab.finance.Employee;
-
-import static org.testng.Assert.*;
 
 public class EmployeeTest
 {
@@ -34,30 +38,45 @@ public class EmployeeTest
     void setup()
     {
         testEmployee = new Employee(1, "john", "smith", "john.smith@foo.bar");
-        ImmutableMap<String, Integer> payslipDetails = ImmutableMap.of("Basic", 20000, "HRA", 16000, "Professional Tax", -200, "Total", 35800);
-        testEmployee.addPayslipForMonth(2013, 12, payslipDetails);
+        Table<YearMonth, String, Integer> payslipDetails = HashBasedTable.create();
+        YearMonth month = new YearMonth(2013, 12);
+        payslipDetails.put(month, "Basic", 20000);
+        payslipDetails.put(month, "HRA", 16000);
+        payslipDetails.put(month, "Professional Tax", -200);
+        payslipDetails.put(month, "Total", 35800);
+
+        testEmployee.addPayslipDetails(payslipDetails);
     }
 
     @Test
     public void testAddPayslip()
     {
-        ImmutableMap<String, Integer> payslipDetails = ImmutableMap.of("Basic", 20000, "HRA", 16000, "Professional Tax", -200, "Total", 35800);
+        Table<YearMonth, String, Integer> payslipDetails = HashBasedTable.create();
+        YearMonth month = new YearMonth(2014, 2);
+        payslipDetails.put(month, "Basic", 20000);
+        payslipDetails.put(month, "HRA", 16000);
+        payslipDetails.put(month, "Professional Tax", -200);
+        payslipDetails.put(month, "Total", 35800);
 
-        testEmployee.addPayslipForMonth(2014, 1, payslipDetails);
+        testEmployee.addPayslipDetails(payslipDetails);
     }
-    
+
     @Test
-    public void testGetPaySlipForMonth(){
-        Map<String, Integer> payslipForMonth = testEmployee.getPayslipForMonth(2013, 12);
+    public void testGetPaySlipForMonth()
+    {
+        Map<String, Integer> payslipForMonth = testEmployee.getPayslipForMonth(new YearMonth(2013, 12));
         assertNotNull(payslipForMonth);
         assertEquals(payslipForMonth.size(), 4);
         assertEquals(payslipForMonth.get("Basic"), Integer.valueOf(20000));
         assertEquals(payslipForMonth.get("HRA"), Integer.valueOf(16000));
         assertEquals(payslipForMonth.get("Professional Tax"), Integer.valueOf(-200));
+        assertEquals(payslipForMonth.get("Total"), Integer.valueOf(35800));
+        
     }
-    
+
     @Test
-    public void testEmployeeEquality(){
+    public void testEmployeeEquality()
+    {
         Employee emp1 = new Employee(1, "john", "smith", "john.smith@foo.bar");
         Employee emp2 = new Employee(1, "first", "last", "first.last@foo.bar");
         Employee emp3 = new Employee(2, "john", "smith", "john.smith@foo.bar");

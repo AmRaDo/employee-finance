@@ -16,14 +16,13 @@
 package ning.codelab.finance;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
 
 import org.joda.time.YearMonth;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 
 public class Employee
 {
@@ -33,7 +32,7 @@ public class Employee
     private String lastName;
     private String emailId;
 
-    ConcurrentMap<YearMonth, ImmutableMap<String, Integer>> paySlipInfo;
+    Table<YearMonth, String, Integer> paySlipInfo;
 
     @JsonCreator
     public Employee(@JsonProperty("id") int id, @JsonProperty("firstName") String firstName, @JsonProperty("lastName") String lastName, @JsonProperty("emailId") String emailId)
@@ -42,7 +41,7 @@ public class Employee
         this.firstName = firstName;
         this.lastName = lastName;
         this.emailId = emailId;
-        this.paySlipInfo = Maps.newConcurrentMap();
+        this.paySlipInfo = HashBasedTable.create();
     }
 
     public int getId()
@@ -65,14 +64,14 @@ public class Employee
         return emailId;
     }
 
-    public Map<String, Integer> getPayslipForMonth(int year, int month)
+    public Map<String, Integer> getPayslipForMonth(YearMonth month)
     {
-        return paySlipInfo.get(new YearMonth(year, month));
+        return paySlipInfo.row(month);
     }
 
-    public void addPayslipForMonth(int year, int month, ImmutableMap<String, Integer> payslipDetails)
+    public void addPayslipDetails(Table<YearMonth, String, Integer> payslipDetails)
     {
-        paySlipInfo.putIfAbsent(new YearMonth(year, month), payslipDetails);
+        paySlipInfo.putAll(payslipDetails);
     }
 
     @Override

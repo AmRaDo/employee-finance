@@ -16,8 +16,10 @@
 package ning.codelab.finance.json;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.google.common.collect.Table;
 import com.google.inject.Provider;
 
 public class JsonObjectMapperProvider implements Provider<ObjectMapper>
@@ -27,7 +29,10 @@ public class JsonObjectMapperProvider implements Provider<ObjectMapper>
     public ObjectMapper get()
     {
         ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModules(new GuavaModule(), new JodaModule());
+        SimpleModule customModule = new SimpleModule("CustomModule");
+        customModule.addSerializer(Table.class, new TableSerializer());
+        customModule.addDeserializer(Table.class, new TableDeserializer());
+        mapper.registerModules(new GuavaModule(), new JodaModule(), customModule);
         return mapper;
     }
 

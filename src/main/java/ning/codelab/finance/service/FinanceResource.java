@@ -24,12 +24,16 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import com.google.common.collect.ImmutableMap;
+import org.joda.time.YearMonth;
+import org.joda.time.format.DateTimeFormat;
+
+import com.google.common.collect.Table;
 import com.google.inject.Inject;
 
 import ning.codelab.finance.Employee;
@@ -144,22 +148,22 @@ public class FinanceResource
 
 
     @POST
-    @Path("/{orgid}/{empid}/{year}/{month}")
+    @Path("/{orgid}/{empid}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response addPayslip(@PathParam("orgid") int orgId, @PathParam("empid") int empId, @PathParam("year") int year, @PathParam("month") int month, ImmutableMap<String, Integer> payslipDetails)
+    public Response addPayslip(@PathParam("orgid") int orgId, @PathParam("empid") int empId, Table<YearMonth, String, Integer> payslipDetails)
     {
         Employee employee = getEmployee(orgId, empId);
-        employee.addPayslipForMonth(year, month, payslipDetails);
+        employee.addPayslipDetails(payslipDetails);
         return Response.ok("Payslip added successfully.").build();
     }
 
     @GET
-    @Path("/{orgid}/{empid}/{year}/{month}")
+    @Path("/{orgid}/{empid}/payslip")
     @Produces(MediaType.APPLICATION_JSON)
-    public Map<String, Integer> getPayslip(@PathParam("orgid") int orgId, @PathParam("empid") int empId, @PathParam("year") int year, @PathParam("month") int month)
+    public Map<String, Integer> getPayslip(@PathParam("orgid") int orgId, @PathParam("empid") int empId, @QueryParam("month") String month)
     {
         Employee employee = getEmployee(orgId, empId);
-        Map<String, Integer> payslipForMonth = employee.getPayslipForMonth(year, month);
+        Map<String, Integer> payslipForMonth = employee.getPayslipForMonth(YearMonth.parse(month, DateTimeFormat.forPattern("MMM-yyyy")));
         if (payslipForMonth == null) {
             throw new WebApplicationException(Response.status(Status.NOT_FOUND).build());
         }

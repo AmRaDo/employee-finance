@@ -50,15 +50,4 @@ public class InMemoryPersistanceImpl implements FinancePersistance
         return null;
     }
 
-    @Override
-    public Map<String, Integer> getEmployeePayslip(int orgId, int empId, int year, int month)
-    {
-        Employee employee = getEmployee(orgId, empId);
-        if (employee != null) {
-            return employee.getPayslipForMonth(year, month);
-        }
-
-        return null;
-    }
-
 }

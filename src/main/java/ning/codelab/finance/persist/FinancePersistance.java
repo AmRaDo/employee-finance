@@ -15,8 +15,6 @@
  */
 package ning.codelab.finance.persist;
 
-import java.util.Map;
-
 import ning.codelab.finance.Employee;
 import ning.codelab.finance.Organization;
 
@@ -28,5 +26,4 @@ public interface FinancePersistance
 
     public Employee getEmployee(int orgId, int EmpId);
 
-    public Map<String, Integer> getEmployeePayslip(int orgId, int EmpId, int year, int month);
 }
