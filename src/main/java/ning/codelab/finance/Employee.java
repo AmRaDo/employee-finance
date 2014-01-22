@@ -64,12 +64,12 @@ public class Employee
         return emailId;
     }
 
-    public Map<String, Integer> getPayslipForMonth(YearMonth month)
+    synchronized public Map<String, Integer> getPayslipForMonth(YearMonth month)
     {
         return paySlipInfo.row(month);
     }
 
-    public void addPayslipDetails(Table<YearMonth, String, Integer> payslipDetails)
+    synchronized public void addPayslipDetails(Table<YearMonth, String, Integer> payslipDetails)
     {
         paySlipInfo.putAll(payslipDetails);
     }
