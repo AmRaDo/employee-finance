@@ -19,14 +19,22 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertNotNull;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 
 import org.joda.time.YearMonth;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import com.google.common.io.Files;
 
 import ning.codelab.finance.Employee;
 
@@ -85,5 +93,39 @@ public class EmployeeTest
         assertEquals(emp2, emp1);
         assertNotEquals(emp2, emp3);
         assertNotEquals(emp1, emp3);
+    }
+    
+    @Test(groups = { "jsontest"})
+    public void testJsonSerialization() throws JsonProcessingException{
+        ObjectMapper mapper = new ObjectMapper();
+       assertEquals(mapper.writeValueAsString(testEmployee), "{\"id\":1,\"firstName\":\"john\",\"lastName\":\"smith\",\"emailId\":\"john.smith@foo.bar\"}");
+    }
+    
+    @Test(groups = { "jsontest"})
+    public void testJsonDeserialization() throws JsonParseException, JsonMappingException, IOException{
+        ObjectMapper mapper = new ObjectMapper();
+        Employee emp = mapper.readValue("{\"id\":1,\"firstName\":\"john\",\"lastName\":\"smith\",\"emailId\":\"john.smith@foo.bar\"}", Employee.class);
+        assertNotNull(emp);
+        assertEquals(emp.getId(), testEmployee.getId());
+        assertEquals(emp.getFirstName(), testEmployee.getFirstName());
+        assertEquals(emp.getLastName(), testEmployee.getLastName());
+        assertEquals(emp.getEmailId(), testEmployee.getEmailId());
+    }
+    
+    @Test(groups = { "jsontest"})
+    public void testJsonSerializationSmile() throws IOException{
+        ObjectMapper mapper = new ObjectMapper(new SmileFactory());
+        assertEquals(mapper.writeValueAsBytes(testEmployee), Files.toByteArray(new File("employee.txt")));
+    }
+    
+    @Test(groups = { "jsontest"})
+    public void testJsonDeserializationSmile() throws JsonParseException, JsonMappingException, IOException{
+        ObjectMapper mapper = new ObjectMapper(new SmileFactory());
+        Employee emp = mapper.readValue(new File("employee.txt"), Employee.class);
+        assertNotNull(emp);
+        assertEquals(emp.getId(), testEmployee.getId());
+        assertEquals(emp.getFirstName(), testEmployee.getFirstName());
+        assertEquals(emp.getLastName(), testEmployee.getLastName());
+        assertEquals(emp.getEmailId(), testEmployee.getEmailId());
     }
 }

@@ -18,8 +18,15 @@ package test.ning.codelab.finance;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
+import java.io.IOException;
+
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ning.codelab.finance.Employee;
 import ning.codelab.finance.Organization;
@@ -65,5 +72,20 @@ public class OrganizationTest
         testOrg.addEmployee(emp3);
         
         assertEquals( testOrg.getAllEmployees().size(), 2);
+    }
+    
+    @Test(groups = { "jsontest"})
+    public void testJsonSerialization() throws JsonProcessingException{
+        ObjectMapper mapper = new ObjectMapper();
+       assertEquals(mapper.writeValueAsString(new Organization(1, "FOO")), "{\"id\":1,\"name\":\"FOO\",\"allEmployees\":[]}");
+    }
+    
+    @Test(groups = { "jsontest"})
+    public void testJsonDeserialization() throws JsonParseException, JsonMappingException, IOException{
+        ObjectMapper mapper = new ObjectMapper();
+        Organization org = mapper.readValue("{\"id\":1,\"name\":\"FOO\"}", Organization.class);
+        assertNotNull(org);
+        assertEquals(org.getId(), testOrg.getId());
+        assertEquals(org.getName(), testOrg.getName());
     }
 }

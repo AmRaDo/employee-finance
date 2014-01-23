@@ -64,7 +64,7 @@ public class Employee
         return emailId;
     }
 
-    synchronized public Map<String, Integer> getPayslipForMonth(YearMonth month)
+    public Map<String, Integer> getPayslipForMonth(YearMonth month)
     {
         return paySlipInfo.row(month);
     }

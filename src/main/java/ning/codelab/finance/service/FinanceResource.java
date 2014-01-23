@@ -26,7 +26,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -35,12 +34,14 @@ import org.joda.time.format.DateTimeFormat;
 
 import com.google.common.collect.Table;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 import ning.codelab.finance.Employee;
 import ning.codelab.finance.Organization;
 import ning.codelab.finance.persist.FinancePersistance;
 
 @Path("finance")
+@Singleton
 public class FinanceResource
 {
     private final FinancePersistance persistance;
@@ -80,7 +81,7 @@ public class FinanceResource
     }
 
     @POST
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes({ "application/x-jackson-smile" })
     public Response addOrganization(Organization org)
     {
         validateOrganization(org);
@@ -103,29 +104,25 @@ public class FinanceResource
 
     @POST
     @Path("/{orgid}/")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes({ "application/x-jackson-smile" })
     public Response addEmployee(@PathParam("orgid") int orgId, Employee employee)
     {
         validateEmployee(employee);
 
-        if (persistance.getOrganization(orgId) == null) {
-            throw new WebApplicationException(Response.status(Status.NOT_FOUND).entity("Organization with given id not found.").build());
-        }
-
-        Organization organization = persistance.getOrganization(orgId);
+        Organization organization = getOrganization(orgId);
 
         if (organization.getEmployee(employee.getId()) != null) {
             throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity("Employee already exists.").build());
         }
-        
+
         organization.addEmployee(employee);
-        
+
         return Response.status(Status.CREATED).build();
     }
 
     @GET
     @Path("/{orgid}/{empid}")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces({ "application/x-jackson-smile" })
     public Employee getEmployee(@PathParam("orgid") int orgId, @PathParam("empid") int empId)
     {
         Organization organization = getOrganization(orgId);
@@ -139,17 +136,16 @@ public class FinanceResource
 
     @GET
     @Path("/{orgid}")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces({ "application/x-jackson-smile" })
     public Set<Employee> getAllEmployees(@PathParam("orgid") int orgId)
     {
         Organization organization = getOrganization(orgId);
         return organization.getAllEmployees();
     }
 
-
     @POST
     @Path("/{orgid}/{empid}")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes({ "application/x-jackson-smile" })
     public Response addPayslip(@PathParam("orgid") int orgId, @PathParam("empid") int empId, Table<YearMonth, String, Integer> payslipDetails)
     {
         Employee employee = getEmployee(orgId, empId);
@@ -159,12 +155,12 @@ public class FinanceResource
 
     @GET
     @Path("/{orgid}/{empid}/payslip")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces({ "application/x-jackson-smile" })
     public Map<String, Integer> getPayslip(@PathParam("orgid") int orgId, @PathParam("empid") int empId, @QueryParam("month") String month)
     {
         Employee employee = getEmployee(orgId, empId);
         Map<String, Integer> payslipForMonth = employee.getPayslipForMonth(YearMonth.parse(month, DateTimeFormat.forPattern("MMM-yyyy")));
-        if (payslipForMonth == null) {
+        if (payslipForMonth == null || payslipForMonth.isEmpty()) {
             throw new WebApplicationException(Response.status(Status.NOT_FOUND).build());
         }
         return payslipForMonth;
