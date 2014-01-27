@@ -26,6 +26,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -39,6 +40,7 @@ import com.google.inject.Singleton;
 import ning.codelab.finance.Employee;
 import ning.codelab.finance.Organization;
 import ning.codelab.finance.persist.FinancePersistance;
+import ning.codelab.finance.persist.PersistanceException;
 
 @Path("finance")
 @Singleton
@@ -81,7 +83,7 @@ public class FinanceResource
     }
 
     @POST
-    @Consumes({ "application/x-jackson-smile" })
+    @Consumes({ MediaType.APPLICATION_JSON })
     public Response addOrganization(Organization org)
     {
         validateOrganization(org);
@@ -104,7 +106,7 @@ public class FinanceResource
 
     @POST
     @Path("/{orgid}/")
-    @Consumes({ "application/x-jackson-smile" })
+    @Consumes({ MediaType.APPLICATION_JSON })
     public Response addEmployee(@PathParam("orgid") int orgId, Employee employee)
     {
         validateEmployee(employee);
@@ -115,18 +117,23 @@ public class FinanceResource
             throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity("Employee already exists.").build());
         }
 
-        organization.addEmployee(employee);
+        try {
+            persistance.addEmployee(orgId, employee);
+        }
+        catch (PersistanceException e) {
+            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity(e).build());
+        }
 
         return Response.status(Status.CREATED).build();
     }
 
     @GET
     @Path("/{orgid}/{empid}")
-    @Produces({ "application/x-jackson-smile" })
+    @Produces({ MediaType.APPLICATION_JSON })
     public Employee getEmployee(@PathParam("orgid") int orgId, @PathParam("empid") int empId)
     {
-        Organization organization = getOrganization(orgId);
-        Employee employee = organization.getEmployee(empId);
+        getOrganization(orgId);
+        Employee employee = persistance.getEmployee(orgId, empId);
         if (employee == null) {
             throw new WebApplicationException(Response.status(Status.NOT_FOUND).build());
         }
@@ -136,7 +143,7 @@ public class FinanceResource
 
     @GET
     @Path("/{orgid}")
-    @Produces({ "application/x-jackson-smile" })
+    @Produces({ MediaType.APPLICATION_JSON })
     public Set<Employee> getAllEmployees(@PathParam("orgid") int orgId)
     {
         Organization organization = getOrganization(orgId);
@@ -145,21 +152,28 @@ public class FinanceResource
 
     @POST
     @Path("/{orgid}/{empid}")
-    @Consumes({ "application/x-jackson-smile" })
+    @Consumes({ MediaType.APPLICATION_JSON })
     public Response addPayslip(@PathParam("orgid") int orgId, @PathParam("empid") int empId, Table<YearMonth, String, Integer> payslipDetails)
     {
         Employee employee = getEmployee(orgId, empId);
         employee.addPayslipDetails(payslipDetails);
+        
+        try {
+            persistance.updateEmployee(orgId, employee);
+        }
+        catch (PersistanceException e) {
+            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity(e).build());
+        }
         return Response.ok("Payslip added successfully.").build();
     }
 
     @GET
     @Path("/{orgid}/{empid}/payslip")
-    @Produces({ "application/x-jackson-smile" })
+    @Produces({ MediaType.APPLICATION_JSON })
     public Map<String, Integer> getPayslip(@PathParam("orgid") int orgId, @PathParam("empid") int empId, @QueryParam("month") String month)
     {
         Employee employee = getEmployee(orgId, empId);
-        Map<String, Integer> payslipForMonth = employee.getPayslipForMonth(YearMonth.parse(month, DateTimeFormat.forPattern("MMM-yyyy")));
+        Map<String, Integer> payslipForMonth = employee.getPayslipForMonth(YearMonth.parse(month, DateTimeFormat.forPattern("yyyy-MM")));
         if (payslipForMonth == null || payslipForMonth.isEmpty()) {
             throw new WebApplicationException(Response.status(Status.NOT_FOUND).build());
         }

@@ -24,10 +24,12 @@ import com.sun.jersey.api.container.filter.GZIPContentEncodingFilter;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 
+import ning.codelab.finance.config.ConfigProvider;
+import ning.codelab.finance.config.DBConfig;
 import ning.codelab.finance.json.JacksonJsonProviderWrapper;
 import ning.codelab.finance.json.JsonObjectMapperProvider;
 import ning.codelab.finance.persist.FinancePersistance;
-import ning.codelab.finance.persist.InMemoryPersistanceImpl;
+import ning.codelab.finance.persist.db.FinancePersistanceDBImpl;
 import ning.codelab.finance.service.FinanceResource;
 
 public class FinanceServerModule extends JerseyServletModule
@@ -39,8 +41,8 @@ public class FinanceServerModule extends JerseyServletModule
     protected void configureServlets()
     {
         bind(FinanceResource.class);
-        bind(FinancePersistance.class).to(InMemoryPersistanceImpl.class).asEagerSingleton();
-
+        bind(FinancePersistance.class).to(FinancePersistanceDBImpl.class).asEagerSingleton();
+        bind(DBConfig.class).toProvider(ConfigProvider.class).asEagerSingleton();
         bind(JacksonJsonProvider.class).toProvider(JacksonJsonProviderWrapper.class).asEagerSingleton();
 
         bind(ObjectMapper.class).toProvider(new JsonObjectMapperProvider()).asEagerSingleton();

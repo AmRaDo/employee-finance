@@ -32,6 +32,7 @@ public class Employee
     private String lastName;
     private String emailId;
 
+    @JsonProperty
     Table<YearMonth, String, Integer> paySlipInfo;
 
     @JsonCreator

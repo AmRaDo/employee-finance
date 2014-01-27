@@ -25,5 +25,9 @@ public interface FinancePersistance
     public Organization getOrganization(int orgId);
 
     public Employee getEmployee(int orgId, int EmpId);
+    
+    public void addEmployee(int orgId, Employee emp) throws PersistanceException;
+    
+    public void updateEmployee(int orgId, Employee emp) throws PersistanceException;
 
 }

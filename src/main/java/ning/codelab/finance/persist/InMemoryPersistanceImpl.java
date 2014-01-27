@@ -50,4 +50,19 @@ public class InMemoryPersistanceImpl implements FinancePersistance
         return null;
     }
 
+    @Override
+    public void addEmployee(int orgId, Employee employee)
+    {
+        Organization organization = getOrganization(orgId);
+        if (organization != null) {
+            organization.addEmployee(employee);
+        }
+    }
+
+    @Override
+    public void updateEmployee(int orgId, Employee emp) throws PersistanceException
+    {
+        addEmployee(orgId, emp);
+    }
+
 }

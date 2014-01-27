@@ -25,7 +25,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.google.common.collect.ImmutableTable;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
 public class TableDeserializer extends JsonDeserializer<Table<YearMonth, String, Integer>>
@@ -34,16 +34,16 @@ public class TableDeserializer extends JsonDeserializer<Table<YearMonth, String,
     @Override
     public Table<YearMonth, String, Integer> deserialize(final JsonParser jp, final DeserializationContext ctxt) throws IOException, JsonProcessingException
     {
-        final ImmutableTable.Builder<YearMonth, String, Integer> tableBuilder = ImmutableTable.builder();
+        final Table<YearMonth, String, Integer> table = HashBasedTable.create();
         final Map<String, Map<String, Integer>> rowMap = jp.readValueAs(Map.class);
         for (final Map.Entry<String, Map<String, Integer>> rowEntry : rowMap.entrySet()) {
-            final YearMonth rowKey = YearMonth.parse(rowEntry.getKey() , DateTimeFormat.forPattern("MMM-yyyy") );
+            final YearMonth rowKey = YearMonth.parse(rowEntry.getKey() , DateTimeFormat.forPattern("yyyy-MM") );
             for (final Map.Entry<String, Integer> cellEntry : rowEntry.getValue().entrySet()) {
                 final String colKey = cellEntry.getKey();
                 final Integer val = cellEntry.getValue();
-                tableBuilder.put(rowKey, colKey, val);
+                table.put(rowKey, colKey, val);
             }
         }
-        return tableBuilder.build();
+        return table;
     }
 }
