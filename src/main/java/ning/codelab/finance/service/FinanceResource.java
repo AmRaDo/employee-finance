@@ -15,10 +15,12 @@
  */
 package ning.codelab.finance.service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -157,7 +159,7 @@ public class FinanceResource
     {
         Employee employee = getEmployee(orgId, empId);
         employee.addPayslipDetails(payslipDetails);
-        
+
         try {
             persistance.updateEmployee(orgId, employee);
         }
@@ -180,4 +182,36 @@ public class FinanceResource
         return payslipForMonth;
     }
 
+    @GET
+    @Path("/{orgid}/getAll")
+    @Produces({ MediaType.APPLICATION_JSON })
+    public List<Employee> getEmployees(@PathParam("orgid") int orgId, @QueryParam("last_empId") @DefaultValue("0") int empId, @QueryParam("size") @DefaultValue("50") int size)
+    {
+        getOrganization(orgId);
+        return persistance.getEmployees(orgId, empId, size);
+    }
+
+/*    @GET
+    @Path("/{orgid}/prepareData")
+    public void prepareData(@PathParam("orgid") int orgId)
+    {
+        System.out.println("Preparing records for " + getOrganization(orgId).getName());
+        String fname = "firstName_", lname = "lastName_";
+        int empId = 1;
+        while (empId < 10 * 1000000) {
+            String firstName = fname + empId;
+            String lastName = lname + empId;
+            String emailId = firstName + "." + lastName + "@foo.bar";
+            try {
+                persistance.addEmployee(orgId, new Employee(empId, firstName, lastName, emailId));
+            }
+            catch (PersistanceException e) {
+                throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity(e).build());
+            }
+            if (empId % 10000 == 0) {
+                System.out.println("Completed records #" + empId);
+            }
+            empId++;
+        }
+    }*/
 }

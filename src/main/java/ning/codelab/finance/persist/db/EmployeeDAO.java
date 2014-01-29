@@ -3,12 +3,12 @@ package ning.codelab.finance.persist.db;
 import java.sql.Blob;
 import java.util.List;
 
-import ning.codelab.finance.Employee;
-
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.Mapper;
+
+import ning.codelab.finance.Employee;
 
 public interface EmployeeDAO {
 
@@ -37,6 +37,14 @@ public interface EmployeeDAO {
 	
 	@SqlUpdate("delete from employee")
 	void clearAllRecords();
+	
+	@Mapper(EmployeeMapper.class)
+	@SqlQuery("select c_id, c_data from employee where c_id > :end_of_last_page order by c_id limit :size")
+    public List<Employee> loadNextPage(@Bind("end_of_last_page") int last, @Bind("size") int size);
+
+	@Mapper(EmployeeMapper.class)
+    @SqlQuery("select c_id, c_data from employee where c_id < :start_of_next_page order by c_id desc limit :size")
+    public List<Employee> loadPreviousPage(@Bind("start_of_next_page") int start, @Bind("size") int size);
 
 	void close();
 }

@@ -15,6 +15,8 @@
  */
 package ning.codelab.finance.persist;
 
+import java.util.List;
+
 import ning.codelab.finance.Employee;
 import ning.codelab.finance.Organization;
 
@@ -30,4 +32,5 @@ public interface FinancePersistance
     
     public void updateEmployee(int orgId, Employee emp) throws PersistanceException;
 
+    public List<Employee> getEmployees(int orgId, int empId, int size);
 }

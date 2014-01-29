@@ -15,6 +15,7 @@
  */
 package ning.codelab.finance.persist.db;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -138,5 +139,11 @@ public class FinancePersistanceDBImpl implements FinancePersistance
             e.printStackTrace();
             throw new PersistanceException(e);
         }
+    }
+
+    @Override
+    public List<Employee> getEmployees(int orgId, int empId, int size)
+    {
+        return dao.loadNextPage(empId, size);
     }
 }

@@ -15,8 +15,10 @@
  */
 package ning.codelab.finance.persist;
 
+import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 import ning.codelab.finance.Employee;
@@ -63,6 +65,16 @@ public class InMemoryPersistanceImpl implements FinancePersistance
     public void updateEmployee(int orgId, Employee emp) throws PersistanceException
     {
         addEmployee(orgId, emp);
+    }
+
+    @Override
+    public List<Employee> getEmployees(int orgId, int empId, int size)
+    {
+        Organization organization = getOrganization(orgId);
+        if (organization != null) {
+            return ImmutableList.copyOf(organization.getAllEmployees());
+        }
+        return null;
     }
 
 }
