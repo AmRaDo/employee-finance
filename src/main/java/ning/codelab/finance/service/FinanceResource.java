@@ -41,19 +41,19 @@ import com.google.inject.Singleton;
 
 import ning.codelab.finance.Employee;
 import ning.codelab.finance.Organization;
-import ning.codelab.finance.persist.FinancePersistance;
 import ning.codelab.finance.persist.PersistanceException;
+import ning.codelab.finance.persist.PersistanceManager;
 
 @Path("finance")
 @Singleton
 public class FinanceResource
 {
-    private final FinancePersistance persistance;
+    private final PersistanceManager manager;
 
     @Inject
-    public FinanceResource(FinancePersistance persistance)
+    public FinanceResource(PersistanceManager manager)
     {
-        this.persistance = persistance;
+        this.manager = manager;
     }
 
     private void validateOrganization(Organization org)
@@ -89,16 +89,16 @@ public class FinanceResource
     public Response addOrganization(Organization org)
     {
         validateOrganization(org);
-        if (persistance.getOrganization(org.getId()) != null) {
+        if (manager.getOrganization(org.getId()) != null) {
             throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity("Organization already exists").build());
         }
-        persistance.addOrganization(org);
+        manager.addOrganization(org);
         return Response.status(Status.CREATED).build();
     }
 
     private Organization getOrganization(int orgId)
     {
-        Organization org = persistance.getOrganization(orgId);
+        Organization org = manager.getOrganization(orgId);
         if (org == null) {
             throw new WebApplicationException(Response.status(Status.NOT_FOUND).build());
         }
@@ -120,7 +120,7 @@ public class FinanceResource
         }
 
         try {
-            persistance.addEmployee(orgId, employee);
+            manager.addEmployee(orgId, employee);
         }
         catch (PersistanceException e) {
             throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity(e).build());
@@ -135,7 +135,7 @@ public class FinanceResource
     public Employee getEmployee(@PathParam("orgid") int orgId, @PathParam("empid") int empId)
     {
         getOrganization(orgId);
-        Employee employee = persistance.getEmployee(orgId, empId);
+        Employee employee = manager.getEmployee(orgId, empId);
         if (employee == null) {
             throw new WebApplicationException(Response.status(Status.NOT_FOUND).build());
         }
@@ -161,7 +161,7 @@ public class FinanceResource
         employee.addPayslipDetails(payslipDetails);
 
         try {
-            persistance.updateEmployee(orgId, employee);
+            manager.updateEmployee(orgId, employee);
         }
         catch (PersistanceException e) {
             throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity(e).build());
@@ -188,7 +188,7 @@ public class FinanceResource
     public List<Employee> getEmployees(@PathParam("orgid") int orgId, @QueryParam("last_empId") @DefaultValue("0") int empId, @QueryParam("size") @DefaultValue("50") int size)
     {
         getOrganization(orgId);
-        return persistance.getEmployees(orgId, empId, size);
+        return manager.getEmployees(orgId, empId, size);
     }
 
 /*    @GET

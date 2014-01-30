@@ -25,7 +25,7 @@ import org.testng.annotations.Test;
 
 import ning.codelab.finance.Employee;
 import ning.codelab.finance.Organization;
-import ning.codelab.finance.persist.FinancePersistance;
+import ning.codelab.finance.persist.PersistanceManager;
 import ning.codelab.finance.service.FinanceResource;
 
 import static org.easymock.EasyMock.*;
@@ -34,19 +34,19 @@ import static org.testng.Assert.*;
 public class FinanceResourceTest
 {
     private FinanceResource financeResource;
-    private FinancePersistance persistance;
+    private PersistanceManager manager;
 
     @BeforeTest
     private void setup()
     {
-        persistance = createNiceMock(FinancePersistance.class);
-        financeResource = new FinanceResource(persistance);
+        manager = createNiceMock(PersistanceManager.class);
+        financeResource = new FinanceResource(manager);
     }
 
     @BeforeMethod
     private void resetMock()
     {
-        resetToNice(persistance);
+        resetToNice(manager);
     }
 
     @Test(expectedExceptions = WebApplicationException.class)
@@ -80,8 +80,8 @@ public class FinanceResourceTest
     @Test
     public void testAddOrganizationNew()
     {
-        expect(persistance.getOrganization(1)).andReturn(null);
-        replay(persistance);
+        expect(manager.getOrganization(1)).andReturn(null);
+        replay(manager);
         Organization org = new Organization(1, "testOrganization");
         Response response = financeResource.addOrganization(org);
         assertNotNull(response);
@@ -91,8 +91,8 @@ public class FinanceResourceTest
     @Test(expectedExceptions = WebApplicationException.class)
     public void testAddOrganizationExisting()
     {
-        expect(persistance.getOrganization(1)).andReturn(new Organization(1, "testName"));
-        replay(persistance);
+        expect(manager.getOrganization(1)).andReturn(new Organization(1, "testName"));
+        replay(manager);
         Organization org = new Organization(1, "testOrganization");
         financeResource.addOrganization(org);
     }

@@ -22,6 +22,10 @@ import ning.codelab.finance.Organization;
 
 public interface FinancePersistance
 {
+    public static final int NONE = 0;
+    public static final int IN_MEMORY = 1;
+    public static final int DATABASE = 2;
+    
     public void addOrganization(Organization org);
 
     public Organization getOrganization(int orgId);
@@ -33,4 +37,6 @@ public interface FinancePersistance
     public void updateEmployee(int orgId, Employee emp) throws PersistanceException;
 
     public List<Employee> getEmployees(int orgId, int empId, int size);
+    
+    public int getType();
 }

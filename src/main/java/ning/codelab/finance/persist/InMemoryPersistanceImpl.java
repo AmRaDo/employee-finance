@@ -77,4 +77,10 @@ public class InMemoryPersistanceImpl implements FinancePersistance
         return null;
     }
 
+    @Override
+    public int getType()
+    {
+        return IN_MEMORY;
+    }
+
 }
