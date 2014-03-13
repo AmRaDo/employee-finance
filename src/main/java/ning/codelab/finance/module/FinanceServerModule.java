@@ -15,8 +15,12 @@
  */
 package ning.codelab.finance.module;
 
-import java.util.HashMap;
-import java.util.Map;
+import ning.codelab.finance.json.JacksonJsonProviderWrapper;
+import ning.codelab.finance.json.JsonObjectMapperProvider;
+import ning.codelab.finance.persist.FinancePersistance;
+import ning.codelab.finance.persist.InMemoryPersistanceImpl;
+import ning.codelab.finance.persist.PersistanceManager;
+import ning.codelab.finance.service.FinanceResource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
@@ -25,17 +29,11 @@ import com.sun.jersey.api.container.filter.GZIPContentEncodingFilter;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 
-import ning.codelab.finance.config.ConfigProvider;
-import ning.codelab.finance.config.DBConfig;
-import ning.codelab.finance.json.JacksonJsonProviderWrapper;
-import ning.codelab.finance.json.JsonObjectMapperProvider;
-import ning.codelab.finance.persist.FinancePersistance;
-import ning.codelab.finance.persist.InMemoryPersistanceImpl;
-import ning.codelab.finance.persist.PersistanceManager;
-import ning.codelab.finance.persist.db.EmployeeDAO;
-import ning.codelab.finance.persist.db.EmployeeDAOProvider;
-import ning.codelab.finance.persist.db.FinancePersistanceDBImpl;
-import ning.codelab.finance.service.FinanceResource;
+import org.apache.shiro.guice.web.GuiceShiroFilter;
+import org.eclipse.jetty.servlet.DefaultServlet;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class FinanceServerModule extends JerseyServletModule
 {
@@ -49,12 +47,12 @@ public class FinanceServerModule extends JerseyServletModule
         
         Multibinder<FinancePersistance> multibinder = Multibinder.newSetBinder(binder(), FinancePersistance.class);
         multibinder.addBinding().to(InMemoryPersistanceImpl.class);
-        multibinder.addBinding().to(FinancePersistanceDBImpl.class);
+//        multibinder.addBinding().to(FinancePersistanceDBImpl.class);
         
         bind(PersistanceManager.class);
-      
-        bind(DBConfig.class).toProvider(ConfigProvider.class).asEagerSingleton();
-        bind(EmployeeDAO.class).toProvider(EmployeeDAOProvider.class).asEagerSingleton();
+//      
+//        bind(DBConfig.class).toProvider(ConfigProvider.class).asEagerSingleton();
+//        bind(EmployeeDAO.class).toProvider(EmployeeDAOProvider.class).asEagerSingleton();
       
         bind(JacksonJsonProvider.class).toProvider(JacksonJsonProviderWrapper.class).asEagerSingleton();
         bind(ObjectMapper.class).toProvider(new JsonObjectMapperProvider()).asEagerSingleton();
@@ -64,6 +62,11 @@ public class FinanceServerModule extends JerseyServletModule
         params.put("com.sun.jersey.spi.container.ContainerRequestFilters", GZIPContentEncodingFilter.class.getName());
         params.put("com.sun.jersey.spi.container.ContainerResponseFilters", GZIPContentEncodingFilter.class.getName());
 
-        serve("/*").with(GuiceContainer.class, params);
+        bind(DefaultServlet.class).asEagerSingleton();
+        bind(GuiceContainer.class).asEagerSingleton();
+        serve("/*").with(DefaultServlet.class, params);
+        // serve("/*").with(GuiceContainer.class);
+        filter("/*").through(GuiceShiroFilter.class);
+        filter("/finance/*").through(GuiceContainer.class);
     }
 }

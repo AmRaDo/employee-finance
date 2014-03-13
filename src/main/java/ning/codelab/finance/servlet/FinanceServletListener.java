@@ -15,16 +15,30 @@
   */
 package ning.codelab.finance.servlet;
 
+import ning.codelab.finance.module.DBModule;
+import ning.codelab.finance.module.FinanceServerModule;
+import ning.codelab.finance.module.ShiroModule;
+
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.servlet.GuiceServletContextListener;
 
-import ning.codelab.finance.module.FinanceServerModule;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
 
 public class FinanceServletListener extends GuiceServletContextListener
 {
+    private ServletContext servletContext;
+    @Override
+    public void contextInitialized(ServletContextEvent servletContextEvent)
+    {
+        this.servletContext = servletContextEvent.getServletContext();
+        super.contextInitialized(servletContextEvent);
+
+    }
+
     @Override
     protected Injector getInjector() {
-        return Guice.createInjector(new FinanceServerModule());
+        return Guice.createInjector(new FinanceServerModule(), new DBModule(), new ShiroModule(servletContext));
     }
 }
